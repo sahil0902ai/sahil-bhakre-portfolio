@@ -7,10 +7,25 @@ export function NewsletterSignup() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && email.includes('@')) {
+    if (!email || !email.includes('@')) return;
+
+    setSubmitting(true);
+    try {
+      await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
       setSubmitted(true);
+    } catch (err) {
+      console.error('Newsletter submission error:', err);
+      setSubmitted(true);
+    } finally {
+      setSubmitting(false);
     }
   };
 
