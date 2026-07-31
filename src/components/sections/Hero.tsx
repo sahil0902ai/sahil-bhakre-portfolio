@@ -23,7 +23,7 @@ const TRUST_STRIP_ITEMS = [
 
 export function Hero() {
   return (
-    <section className="relative min-h-[85vh] sm:min-h-[92vh] flex flex-col justify-center pt-20 sm:pt-28 pb-8 sm:pb-16 px-4 sm:px-6 max-w-7xl mx-auto text-left overflow-hidden">
+    <section className="relative min-h-[82vh] sm:min-h-[92vh] flex flex-col justify-center pt-16 sm:pt-28 pb-4 sm:pb-16 px-4 sm:px-6 max-w-7xl mx-auto text-left overflow-hidden">
       
       {/* Background Depth */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5 sm:opacity-10 pointer-events-none" />
@@ -31,10 +31,10 @@ export function Hero() {
       <div className="hidden sm:block absolute bottom-1/3 right-1/4 w-96 h-96 bg-accent-secondary/10 rounded-full blur-[140px] pointer-events-none" />
 
       {/* 12-Column Grid (45% LEFT / 55% RIGHT Split) */}
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center w-full">
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16 items-center w-full">
         
-        {/* LEFT COLUMN (FIRST SCREEN — Comfortably fits within 1 mobile viewport) */}
-        <div className="lg:col-span-5 space-y-4">
+        {/* LEFT COLUMN (FIRST SCREEN — Fits comfortably within 1 mobile viewport) */}
+        <div className="lg:col-span-5 space-y-3 sm:space-y-4">
           
           {/* 1. Availability Badge */}
           <motion.div
@@ -55,19 +55,19 @@ export function Hero() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="text-[30px] sm:text-5xl lg:text-[54px] font-extrabold tracking-tighter text-text-primary leading-[1.08]"
+            className="text-[28px] sm:text-5xl lg:text-[54px] font-extrabold tracking-tighter text-text-primary leading-[1.08]"
           >
             Building AI-Powered <br />
             <span className="text-transparent bg-clip-text bg-accent-gradient">Web Applications</span> &amp; <br />
             <span className="text-transparent bg-clip-text bg-accent-gradient">Automation Systems</span>
           </motion.h1>
 
-          {/* 3. Subtitle */}
+          {/* 3. Short Description */}
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="text-sm sm:text-base text-text-secondary leading-relaxed max-w-lg font-normal"
+            className="text-xs sm:text-base text-text-secondary leading-relaxed max-w-lg font-normal"
           >
             I help businesses build modern websites, AI-powered software, and workflow automation.
           </motion.p>
@@ -77,12 +77,12 @@ export function Hero() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1 w-full"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-0.5 w-full"
           >
             <a
               href="#contact"
               onClick={() => trackCTAClick('hero_start_project', '#contact')}
-              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-2xl sm:rounded-full bg-accent-gradient text-text-primary text-base font-bold shadow-lg hover:shadow-glow transition-all active:scale-[0.98] min-h-[52px] sm:min-h-[56px] w-full sm:w-auto"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3 sm:py-4 rounded-2xl sm:rounded-full bg-accent-gradient text-text-primary text-sm sm:text-base font-bold shadow-lg hover:shadow-glow transition-all active:scale-[0.98] min-h-[50px] sm:min-h-[56px] w-full sm:w-auto"
             >
               <span>Start a Project</span>
               <ArrowRight className="h-4 w-4" />
@@ -93,30 +93,30 @@ export function Hero() {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => trackCTAClick('hero_whatsapp_direct', 'https://wa.me/919823511929')}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-4 rounded-2xl sm:rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 text-sm font-bold transition-all active:scale-[0.98] min-h-[52px] sm:min-h-[56px] w-full sm:w-auto"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 sm:py-4 rounded-2xl sm:rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 text-xs sm:text-sm font-bold transition-all active:scale-[0.98] min-h-[50px] sm:min-h-[56px] w-full sm:w-auto"
             >
               <Zap className="h-4 w-4 fill-emerald-400" />
               <span>WhatsApp Me</span>
             </a>
           </motion.div>
 
-          {/* 5. Trust Strip */}
+          {/* 5. Trust Badges */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.4 }}
-            className="pt-3 border-t border-border-subtle/30 flex items-center justify-between sm:justify-start gap-3 text-[11px] font-mono font-semibold text-text-muted"
+            className="pt-2.5 border-t border-border-subtle/30 flex items-center justify-between sm:justify-start gap-2 text-[10px] sm:text-[11px] font-mono font-semibold text-text-muted"
           >
             <div className="flex items-center gap-1 text-accent-success">
-              <CheckCircle2 className="h-3.5 w-3.5" />
+              <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span>✓ Fast Response</span>
             </div>
             <div className="flex items-center gap-1 text-accent-primary">
-              <CheckCircle2 className="h-3.5 w-3.5" />
+              <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span>✓ AI Solutions</span>
             </div>
             <div className="flex items-center gap-1 text-accent-highlight">
-              <CheckCircle2 className="h-3.5 w-3.5" />
+              <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span>✓ Modern Web Apps</span>
             </div>
           </motion.div>
