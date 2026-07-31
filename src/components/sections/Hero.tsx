@@ -36,7 +36,7 @@ export function Hero() {
         {/* LEFT COLUMN (FIRST SCREEN — Comfortably fits within 1 mobile viewport) */}
         <div className="lg:col-span-5 space-y-4">
           
-          {/* 1. Small Availability Badge */}
+          {/* 1. Availability Badge */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -47,10 +47,10 @@ export function Hero() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-success opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-success" />
             </span>
-            <span>Available for Freelance Projects</span>
+            <span>Available for Projects</span>
           </motion.div>
 
-          {/* 2. Strong Headline (Maximum 3 lines on mobile) */}
+          {/* 2. Headline */}
           <motion.h1
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -62,17 +62,17 @@ export function Hero() {
             <span className="text-transparent bg-clip-text bg-accent-gradient">Automation Systems</span>
           </motion.h1>
 
-          {/* 3. Supporting Text (Maximum 2 lines focusing on business outcomes) */}
+          {/* 3. Subtitle */}
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
             className="text-sm sm:text-base text-text-secondary leading-relaxed max-w-lg font-normal"
           >
-            I build fast, scalable websites and AI-powered automation that help businesses save time and grow.
+            I help businesses build modern websites, AI-powered software, and workflow automation.
           </motion.p>
 
-          {/* 4. Primary CTA & 5. Secondary WhatsApp Me CTA */}
+          {/* 4. CTAs: [ Start a Project ] & [ WhatsApp Me ] */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -100,7 +100,7 @@ export function Hero() {
             </a>
           </motion.div>
 
-          {/* 6. Small Trust Strip */}
+          {/* 5. Trust Strip */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -109,19 +109,15 @@ export function Hero() {
           >
             <div className="flex items-center gap-1 text-accent-success">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>AI Solutions</span>
+              <span>✓ Fast Response</span>
             </div>
             <div className="flex items-center gap-1 text-accent-primary">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Full Stack</span>
+              <span>✓ AI Solutions</span>
             </div>
             <div className="flex items-center gap-1 text-accent-highlight">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Automation</span>
-            </div>
-            <div className="hidden sm:flex items-center gap-1 text-text-primary">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Performance</span>
+              <span>✓ Modern Web Apps</span>
             </div>
           </motion.div>
 
