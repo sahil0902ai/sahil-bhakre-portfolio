@@ -8,23 +8,25 @@ import { supabaseClient } from '@lib/supabase/client';
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectPath = searchParams.get('redirect') || '/dashboard';
+  const redirectPath = searchParams.get('redirect') || '/admin';
+  const urlError = searchParams.get('error');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isResetMode, setIsResetMode] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    urlError === 'unauthorized' ? 'Access Denied: Admin Authorization Required.' : null
+  );
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if user is already logged in
     supabaseClient.auth.getUser().then(({ data: { user } }) => {
       if (user) {
-        router.push(redirectPath);
+        window.location.href = redirectPath;
       }
     });
-  }, [router, redirectPath]);
+  }, [redirectPath]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,15 +45,12 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        setMessage('Authentication successful. Redirecting to Admin Dashboard...');
-        setTimeout(() => {
-          router.push(redirectPath);
-          router.refresh();
-        }, 800);
+        setMessage('Authentication successful! Redirecting to Admin Panel...');
+        // Instant hard navigation to refresh cookies & App Router state
+        window.location.href = redirectPath;
       }
     } catch (err: any) {
       setError(err.message || 'Invalid admin credentials.');
-    } finally {
       setLoading(false);
     }
   };

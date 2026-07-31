@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+const ADMIN_EMAIL = 'sahilbhakre8@gmail.com';
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -37,7 +39,7 @@ export async function updateSession(request: NextRequest) {
   const protectedRoutes = ['/admin', '/dashboard', '/settings'];
   const isProtectedRoute = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route));
 
-  // If user is trying to access protected route without being authenticated
+  // 1. Unauthenticated Protection
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
@@ -45,10 +47,24 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // If user is logged in and trying to access /login
+  // 2. Strict Admin Role Security Check (Blocks non-admin emails)
+  if (isProtectedRoute && user) {
+    const userEmail = user.email?.toLowerCase();
+    // Allow sahilbhakre8@gmail.com or any authenticated admin email
+    const isAuthorizedAdmin = userEmail === ADMIN_EMAIL.toLowerCase() || user.user_metadata?.role === 'admin';
+    
+    if (!isAuthorizedAdmin) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      url.searchParams.set('error', 'unauthorized');
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // 3. Logged in Admin visiting /login -> Redirect directly to /admin
   if (user && request.nextUrl.pathname === '/login') {
     const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
+    url.pathname = '/admin';
     return NextResponse.redirect(url);
   }
 
