@@ -21,12 +21,18 @@ export default function LoginPage() {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    if (urlError === 'unauthorized') {
+      // Clear stale unauthorized session to prevent loop
+      supabaseClient.auth.signOut();
+      return;
+    }
+
     supabaseClient.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        window.location.href = redirectPath;
+      if (user && user.email?.toLowerCase() === 'sahilbhakre8@gmail.com') {
+        router.push(redirectPath);
       }
     });
-  }, [redirectPath]);
+  }, [redirectPath, urlError, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

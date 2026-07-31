@@ -47,22 +47,20 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 2. Strict Admin Role Security Check (Blocks non-admin emails)
-  if (isProtectedRoute && user) {
-    const userEmail = user.email?.toLowerCase();
-    // Allow sahilbhakre8@gmail.com or any authenticated admin email
-    const isAuthorizedAdmin = userEmail === ADMIN_EMAIL.toLowerCase() || user.user_metadata?.role === 'admin';
-    
-    if (!isAuthorizedAdmin) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/login';
-      url.searchParams.set('error', 'unauthorized');
-      return NextResponse.redirect(url);
-    }
+  // Check if current user is an authorized admin
+  const userEmail = user?.email?.toLowerCase();
+  const isAuthorizedAdmin = !!user && (userEmail === ADMIN_EMAIL.toLowerCase() || user.user_metadata?.role === 'admin');
+
+  // 2. Strict Admin Role Security Check (Blocks non-admin emails on protected routes)
+  if (isProtectedRoute && user && !isAuthorizedAdmin) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/login';
+    url.searchParams.set('error', 'unauthorized');
+    return NextResponse.redirect(url);
   }
 
-  // 3. Logged in Admin visiting /login -> Redirect directly to /admin
-  if (user && request.nextUrl.pathname === '/login') {
+  // 3. Logged in Authorized Admin visiting /login (without error flag) -> Redirect to /admin
+  if (isAuthorizedAdmin && request.nextUrl.pathname === '/login' && !request.nextUrl.searchParams.has('error')) {
     const url = request.nextUrl.clone();
     url.pathname = '/admin';
     return NextResponse.redirect(url);
