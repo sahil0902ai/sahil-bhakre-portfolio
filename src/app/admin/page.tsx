@@ -44,9 +44,13 @@ export default function AdminDashboardPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleLogout = async () => {
-    await supabaseClient.auth.signOut();
-    router.push('/login');
-    router.refresh();
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      await supabaseClient.auth.signOut();
+    } catch (e) {
+      console.error(e);
+    }
+    window.location.href = '/login';
   };
 
   const fetchAdminData = async () => {

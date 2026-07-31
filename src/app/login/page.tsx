@@ -41,20 +41,21 @@ export default function LoginPage() {
     setMessage(null);
 
     try {
-      const { data, error: authError } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password,
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (authError) {
-        throw new Error(authError.message);
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Invalid admin credentials.');
       }
 
-      if (data.user) {
-        setMessage('Authentication successful! Redirecting to Admin Panel...');
-        // Instant hard navigation to refresh cookies & App Router state
-        window.location.href = redirectPath;
-      }
+      setMessage('Authentication successful! Redirecting to Admin Panel...');
+      // Explicit navigation to /admin
+      window.location.href = '/admin';
     } catch (err: any) {
       setError(err.message || 'Invalid admin credentials.');
       setLoading(false);
