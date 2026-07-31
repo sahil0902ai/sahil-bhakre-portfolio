@@ -23,9 +23,9 @@ const TRUST_STRIP_ITEMS = [
 
 export function Hero() {
   return (
-    <section className="relative min-h-[85vh] sm:min-h-[92vh] flex items-center justify-center pt-20 sm:pt-28 pb-8 sm:pb-16 px-4 sm:px-6 max-w-7xl mx-auto text-left overflow-hidden">
+    <section className="relative min-h-[85vh] sm:min-h-[92vh] flex flex-col justify-center pt-20 sm:pt-28 pb-8 sm:pb-16 px-4 sm:px-6 max-w-7xl mx-auto text-left overflow-hidden">
       
-      {/* Background Depth: Reduced decorative blur on mobile for performance */}
+      {/* Background Depth */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5 sm:opacity-10 pointer-events-none" />
       <div className="hidden sm:block absolute top-1/4 left-1/4 w-96 h-96 bg-accent-primary/10 rounded-full blur-[140px] pointer-events-none" />
       <div className="hidden sm:block absolute bottom-1/3 right-1/4 w-96 h-96 bg-accent-secondary/10 rounded-full blur-[140px] pointer-events-none" />
@@ -33,51 +33,51 @@ export function Hero() {
       {/* 12-Column Grid (45% LEFT / 55% RIGHT Split) */}
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center w-full">
         
-        {/* LEFT COLUMN (Headline, CTA, Status) */}
-        <div className="lg:col-span-5 space-y-4 sm:space-y-6">
+        {/* LEFT COLUMN (FIRST SCREEN — Comfortably fits within 1 mobile viewport) */}
+        <div className="lg:col-span-5 space-y-4">
           
-          {/* 1. Who I Am & Availability Badge */}
+          {/* 1. Small Availability Badge */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-accent-success/10 border border-accent-success/20 text-accent-success font-mono text-[11px] font-semibold"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-success/10 border border-accent-success/20 text-accent-success font-mono text-[11px] font-semibold"
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-success opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-success" />
             </span>
-            <span>Sahil Bhakre • Available for New Projects</span>
+            <span>Available for Freelance Projects</span>
           </motion.div>
 
-          {/* 2. Headline - Apple Mobile-First Scale (32px mobile / 54px desktop) */}
+          {/* 2. Strong Headline (Maximum 3 lines on mobile) */}
           <motion.h1
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="text-[32px] sm:text-5xl lg:text-[54px] font-extrabold tracking-tighter text-text-primary leading-[1.08]"
+            className="text-[30px] sm:text-5xl lg:text-[54px] font-extrabold tracking-tighter text-text-primary leading-[1.08]"
           >
-            Building Intelligent <br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-accent-gradient">AI Products</span> &amp; <br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-accent-gradient">Automation</span> That Scale.
+            Building AI-Powered <br />
+            <span className="text-transparent bg-clip-text bg-accent-gradient">Web Applications</span> &amp; <br />
+            <span className="text-transparent bg-clip-text bg-accent-gradient">Automation Systems</span>
           </motion.h1>
 
-          {/* 3. Subtitle Paragraph */}
+          {/* 3. Supporting Text (Maximum 2 lines focusing on business outcomes) */}
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
             className="text-sm sm:text-base text-text-secondary leading-relaxed max-w-lg font-normal"
           >
-            I help founders, startups, and enterprises build AI software, modern web platforms, and automated pipelines that eliminate manual work.
+            I build fast, scalable websites and AI-powered automation that help businesses save time and grow.
           </motion.p>
 
-          {/* 4. Immediately Visible CTAs (52px - 56px Apple Touch Target + WhatsApp Quick Action) */}
+          {/* 4. Primary CTA & 5. Secondary WhatsApp Me CTA */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 w-full"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1 w-full"
           >
             <a
               href="#contact"
@@ -88,68 +88,51 @@ export function Hero() {
               <ArrowRight className="h-4 w-4" />
             </a>
 
-            <div className="flex items-center gap-2.5 w-full sm:w-auto">
-              <a
-                href="https://wa.me/919823511929?text=Hi%20Sahil,%20I%20saw%20your%20portfolio%20and%20I'd%20like%20to%20discuss%20a%20project."
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trackCTAClick('hero_whatsapp_direct', 'https://wa.me/919823511929')}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 sm:py-4 rounded-2xl sm:rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 text-sm font-bold transition-all active:scale-[0.98] min-h-[52px] sm:min-h-[56px]"
-              >
-                <Zap className="h-4 w-4 fill-emerald-400" />
-                <span>WhatsApp Instant</span>
-              </a>
-
-              <a
-                href="#projects"
-                onClick={() => trackCTAClick('hero_view_case_studies', '#projects')}
-                className="inline-flex items-center justify-center px-5 py-3.5 sm:py-4 rounded-2xl sm:rounded-full border border-border-subtle bg-bg-surface text-text-primary text-sm font-semibold transition-colors active:scale-[0.98] min-h-[52px] sm:min-h-[56px]"
-              >
-                <span>Work</span>
-              </a>
-            </div>
+            <a
+              href="https://wa.me/919823511929?text=Hi%20Sahil,%20I%20saw%20your%20portfolio%20and%20I'd%20like%20to%20discuss%20a%20project."
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackCTAClick('hero_whatsapp_direct', 'https://wa.me/919823511929')}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-4 rounded-2xl sm:rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 text-sm font-bold transition-all active:scale-[0.98] min-h-[52px] sm:min-h-[56px] w-full sm:w-auto"
+            >
+              <Zap className="h-4 w-4 fill-emerald-400" />
+              <span>WhatsApp Me</span>
+            </a>
           </motion.div>
 
-          {/* 5. Trust Standards - Hidden on small mobile screens to fit within 1 viewport */}
+          {/* 6. Small Trust Strip */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.4 }}
-            className="hidden sm:block pt-5 border-t border-border-subtle/30 space-y-3"
+            className="pt-3 border-t border-border-subtle/30 flex items-center justify-between sm:justify-start gap-3 text-[11px] font-mono font-semibold text-text-muted"
           >
-            <span className="font-mono text-[10px] uppercase text-text-muted font-bold tracking-wider block">
-              Core Engineering Standards
-            </span>
-            
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-left font-mono">
-              {TRUST_STRIP_ITEMS.map((item) => {
-                const IconComponent = item.icon;
-
-                return (
-                  <div key={item.label} className="flex items-start gap-2 group">
-                    <IconComponent className={`h-3.5 w-3.5 ${item.color} shrink-0 mt-0.5`} />
-                    <div className="space-y-0.5">
-                      <div className="text-[11px] font-bold text-text-primary group-hover:text-accent-primary transition-colors leading-none">
-                        {item.label}
-                      </div>
-                      <p className="text-[10px] text-text-muted leading-tight truncate max-w-[170px]">
-                        {item.description}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="flex items-center gap-1 text-accent-success">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span>AI Solutions</span>
+            </div>
+            <div className="flex items-center gap-1 text-accent-primary">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span>Full Stack</span>
+            </div>
+            <div className="flex items-center gap-1 text-accent-highlight">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span>Automation</span>
+            </div>
+            <div className="hidden sm:flex items-center gap-1 text-text-primary">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span>Performance</span>
             </div>
           </motion.div>
 
         </div>
 
-        {/* RIGHT COLUMN (55% / lg:col-span-7) — SAAS PRODUCT INTERFACE (Below CTA on Mobile) */}
+        {/* RIGHT COLUMN (Dashboard Preview — Appears below CTAs on mobile) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="lg:col-span-7 space-y-3 pt-4 lg:pt-0"
+          className="lg:col-span-7 space-y-3 pt-2 lg:pt-0"
         >
           {/* Technology Badges - Hidden on mobile for cleaner density */}
           <div className="hidden sm:flex flex-wrap items-center justify-end gap-2 font-mono text-[10px]">
