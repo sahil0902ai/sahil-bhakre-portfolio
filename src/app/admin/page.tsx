@@ -18,7 +18,7 @@ export interface LeadRecord {
   phone: string | null;
   budget: string;
   message: string;
-  status: 'New' | 'Contacted' | 'Closed';
+  status: 'Unread' | 'Read' | 'Archived' | 'Deleted' | 'New' | 'Contacted' | 'Closed';
   created_at: string;
 }
 
@@ -77,7 +77,10 @@ export default function AdminDashboardPage() {
     fetchAdminData();
   }, []);
 
-  const updateLeadStatus = async (id: string, newStatus: 'New' | 'Contacted' | 'Closed') => {
+  const updateLeadStatus = async (
+    id: string,
+    newStatus: 'Unread' | 'Read' | 'Archived' | 'Deleted' | 'New' | 'Contacted' | 'Closed'
+  ) => {
     try {
       setLeads((prev) =>
         prev.map((l) => (l.id === id ? { ...l, status: newStatus } : l))
@@ -372,9 +375,13 @@ export default function AdminDashboardPage() {
                 className="w-full px-3 py-2.5 rounded-xl bg-bg-inset border border-border-subtle text-xs text-text-primary focus:outline-none focus:border-accent-primary font-mono"
               >
                 <option value="All">All Statuses</option>
+                <option value="Unread">Status: Unread</option>
+                <option value="Read">Status: Read</option>
                 <option value="New">Status: New</option>
                 <option value="Contacted">Status: Contacted</option>
                 <option value="Closed">Status: Closed</option>
+                <option value="Archived">Status: Archived</option>
+                <option value="Deleted">Status: Deleted</option>
               </select>
             </div>
 
@@ -441,39 +448,23 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
 
-                    {/* Status Controls */}
+                    {/* Status Controls Dropdown */}
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1 font-mono text-[10px]">
-                        <button
-                          onClick={() => updateLeadStatus(lead.id, 'New')}
-                          className={`px-3 py-1 rounded-full border transition-colors ${
-                            lead.status === 'New'
-                              ? 'bg-accent-primary/20 border-accent-primary text-accent-primary font-bold'
-                              : 'bg-bg-inset border-border-subtle text-text-muted hover:text-text-primary'
-                          }`}
+                      <div className="flex items-center gap-1 font-mono text-xs">
+                        <span className="text-[10px] text-text-muted mr-1">Status:</span>
+                        <select
+                          value={lead.status || 'Unread'}
+                          onChange={(e) => updateLeadStatus(lead.id, e.target.value as any)}
+                          className="px-3 py-1 rounded-full border bg-bg-inset border-border-subtle text-text-primary text-[11px] font-mono focus:outline-none focus:border-accent-primary"
                         >
-                          New
-                        </button>
-                        <button
-                          onClick={() => updateLeadStatus(lead.id, 'Contacted')}
-                          className={`px-3 py-1 rounded-full border transition-colors ${
-                            lead.status === 'Contacted'
-                              ? 'bg-accent-highlight/20 border-accent-highlight text-accent-highlight font-bold'
-                              : 'bg-bg-inset border-border-subtle text-text-muted hover:text-text-primary'
-                          }`}
-                        >
-                          Contacted
-                        </button>
-                        <button
-                          onClick={() => updateLeadStatus(lead.id, 'Closed')}
-                          className={`px-3 py-1 rounded-full border transition-colors ${
-                            lead.status === 'Closed'
-                              ? 'bg-accent-success/20 border-accent-success text-accent-success font-bold'
-                              : 'bg-bg-inset border-border-subtle text-text-muted hover:text-text-primary'
-                          }`}
-                        >
-                          Closed
-                        </button>
+                          <option value="Unread">🔵 Unread</option>
+                          <option value="Read">📖 Read</option>
+                          <option value="New">✨ New</option>
+                          <option value="Contacted">💬 Contacted</option>
+                          <option value="Closed">✅ Closed</option>
+                          <option value="Archived">📦 Archived</option>
+                          <option value="Deleted">🗑️ Deleted</option>
+                        </select>
                       </div>
 
                       {/* Delete Lead Button */}
