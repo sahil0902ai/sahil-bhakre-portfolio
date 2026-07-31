@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { supabaseClient } from '@lib/supabase/client';
 import ProjectsManager from '@/components/admin/ProjectsManager';
+import SiteSettingsManager from '@/components/admin/SiteSettingsManager';
 
 export interface LeadRecord {
   id: string;
@@ -32,7 +33,7 @@ export interface SubscriberRecord {
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'overview' | 'leads' | 'projects' | 'subscribers' | 'settings'>('leads');
+  const [activeTab, setActiveTab] = useState<'overview' | 'leads' | 'projects' | 'site_settings' | 'subscribers' | 'settings'>('leads');
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [subscribers, setSubscribers] = useState<SubscriberRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -277,6 +278,18 @@ export default function AdminDashboardPage() {
         </button>
 
         <button
+          onClick={() => setActiveTab('site_settings')}
+          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 font-bold whitespace-nowrap ${
+            activeTab === 'site_settings'
+              ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30'
+              : 'text-text-muted hover:text-text-primary'
+          }`}
+        >
+          <Settings className="h-4 w-4" />
+          <span>Site Settings CMS</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('subscribers')}
           className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 font-bold whitespace-nowrap ${
             activeTab === 'subscribers'
@@ -303,6 +316,9 @@ export default function AdminDashboardPage() {
 
       {/* TAB: PROJECTS CMS MANAGER */}
       {activeTab === 'projects' && <ProjectsManager />}
+
+      {/* TAB: SITE SETTINGS CMS MANAGER */}
+      {activeTab === 'site_settings' && <SiteSettingsManager />}
 
       {/* TAB 1: OVERVIEW METRICS */}
       {activeTab === 'overview' && (
