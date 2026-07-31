@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Mail, Clock, Shield, CheckCircle2, User, Phone, Building, DollarSign, 
   RefreshCw, Lock, Search, Filter, Trash2, Download, Layers, TrendingUp, 
-  CheckSquare, Activity, ExternalLink, Sparkles, Server, Database
+  CheckSquare, Activity, ExternalLink, Sparkles, Server, Database, LogOut, Inbox, Settings
 } from 'lucide-react';
+import { supabaseClient } from '@lib/supabase/client';
 
 export interface LeadRecord {
   id: string;
@@ -27,6 +30,7 @@ export interface SubscriberRecord {
 }
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'leads' | 'subscribers' | 'settings'>('leads');
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [subscribers, setSubscribers] = useState<SubscriberRecord[]>([]);
@@ -38,6 +42,12 @@ export default function AdminDashboardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [budgetFilter, setBudgetFilter] = useState<string>('All');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleLogout = async () => {
+    await supabaseClient.auth.signOut();
+    router.push('/login');
+    router.refresh();
+  };
 
   const fetchAdminData = async () => {
     setLoading(true);
@@ -166,24 +176,56 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-3">
+        {/* Action Controls & Navigation */}
+        <div className="flex items-center gap-2 font-mono text-xs">
+          <Link
+            href="/dashboard"
+            className="px-3.5 py-2 rounded-xl bg-bg-inset border border-border-subtle text-text-muted hover:text-text-primary transition-colors flex items-center gap-1.5"
+          >
+            <TrendingUp className="h-3.5 w-3.5" />
+            <span>Dashboard</span>
+          </Link>
+
+          <Link
+            href="/admin"
+            className="px-3.5 py-2 rounded-xl bg-accent-primary/20 text-accent-primary border border-accent-primary/30 font-bold flex items-center gap-1.5"
+          >
+            <Inbox className="h-3.5 w-3.5" />
+            <span>Leads Inbox</span>
+          </Link>
+
+          <Link
+            href="/settings"
+            className="px-3.5 py-2 rounded-xl bg-bg-inset border border-border-subtle text-text-muted hover:text-text-primary transition-colors flex items-center gap-1.5"
+          >
+            <Settings className="h-3.5 w-3.5" />
+            <span>Settings</span>
+          </Link>
+
           <button
             onClick={fetchAdminData}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-border-subtle bg-bg-surface text-xs font-mono text-text-primary hover:border-accent-primary transition-all btn-micro"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-border-subtle bg-bg-surface text-text-primary hover:border-accent-primary transition-all btn-micro"
           >
             <RefreshCw className={`h-3.5 w-3.5 text-accent-primary ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh Data</span>
+            <span>Refresh</span>
           </button>
 
           <button
             onClick={exportLeadsCSV}
             disabled={leads.length === 0}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-accent-gradient text-text-primary text-xs font-mono font-bold shadow-glow transition-all btn-micro disabled:opacity-40"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-accent-gradient text-text-primary font-bold shadow-glow transition-all btn-micro disabled:opacity-40"
           >
             <Download className="h-3.5 w-3.5" />
             <span>Export CSV</span>
+          </button>
+
+          <button
+            onClick={handleLogout}
+            className="px-3.5 py-2 rounded-xl border border-accent-highlight/30 bg-accent-highlight/10 text-accent-highlight hover:bg-accent-highlight/20 transition-all font-bold flex items-center gap-1.5 btn-micro ml-1"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            <span>Logout</span>
           </button>
         </div>
       </div>
