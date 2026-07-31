@@ -23,25 +23,25 @@ const TRUST_STRIP_ITEMS = [
 
 export function Hero() {
   return (
-    <section className="relative min-h-[90vh] sm:min-h-[92vh] flex items-center justify-center pt-24 sm:pt-28 pb-12 sm:pb-16 px-4 sm:px-6 max-w-7xl mx-auto text-left overflow-hidden">
+    <section className="relative min-h-[85vh] sm:min-h-[92vh] flex items-center justify-center pt-20 sm:pt-28 pb-8 sm:pb-16 px-4 sm:px-6 max-w-7xl mx-auto text-left overflow-hidden">
       
-      {/* Background Depth: Subtle Grid & Soft Radial Glow */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-primary/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-accent-secondary/10 rounded-full blur-[140px] pointer-events-none" />
+      {/* Background Depth: Reduced decorative blur on mobile for performance */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-5 sm:opacity-10 pointer-events-none" />
+      <div className="hidden sm:block absolute top-1/4 left-1/4 w-96 h-96 bg-accent-primary/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="hidden sm:block absolute bottom-1/3 right-1/4 w-96 h-96 bg-accent-secondary/10 rounded-full blur-[140px] pointer-events-none" />
 
       {/* 12-Column Grid (45% LEFT / 55% RIGHT Split) */}
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center w-full">
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center w-full">
         
-        {/* LEFT COLUMN (45% / lg:col-span-5) */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* LEFT COLUMN (Headline, CTA, Status) */}
+        <div className="lg:col-span-5 space-y-4 sm:space-y-6">
           
           {/* 1. Who I Am & Availability Badge */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent-success/10 border border-accent-success/20 text-accent-success font-mono text-[11px] font-semibold"
+            className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-accent-success/10 border border-accent-success/20 text-accent-success font-mono text-[11px] font-semibold"
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-success opacity-75" />
@@ -50,40 +50,39 @@ export function Hero() {
             <span>Sahil Bhakre • Available for New Projects</span>
           </motion.div>
 
-          {/* 2. What I Build (Headline — Apple Mobile Optimized Typography) */}
+          {/* 2. Headline - Apple Mobile-First Scale (32px mobile / 54px desktop) */}
           <motion.h1
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="text-3xl sm:text-5xl lg:text-[54px] font-extrabold tracking-tighter text-text-primary leading-[1.1]"
+            className="text-[32px] sm:text-5xl lg:text-[54px] font-extrabold tracking-tighter text-text-primary leading-[1.08]"
           >
-            Building Intelligent <br />
-            <span className="text-transparent bg-clip-text bg-accent-gradient">AI Products</span> & <br />
-            <span className="text-transparent bg-clip-text bg-accent-gradient">Business Automation</span> <br />
-            That Scale.
+            Building Intelligent <br className="hidden sm:block" />
+            <span className="text-transparent bg-clip-text bg-accent-gradient">AI Products</span> &amp; <br className="hidden sm:block" />
+            <span className="text-transparent bg-clip-text bg-accent-gradient">Automation</span> That Scale.
           </motion.h1>
 
-          {/* 3. Who I Help & Why I Am Different */}
+          {/* 3. Subtitle Paragraph */}
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="text-xs sm:text-sm text-text-secondary leading-relaxed max-w-lg font-normal"
+            className="text-sm sm:text-base text-text-secondary leading-relaxed max-w-lg font-normal"
           >
-            I help founders, startups, and enterprises build AI software, modern web platforms, and automated pipelines that eliminate manual work and accelerate growth.
+            I help founders, startups, and enterprises build AI software, modern web platforms, and automated pipelines that eliminate manual work.
           </motion.p>
 
-          {/* 4. How to Contact Me (CTAs — 56px Apple Touch Target Height) */}
+          {/* 4. Immediately Visible CTAs (52px - 56px Apple Touch Target) */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1 w-full"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 w-full"
           >
             <a
               href="#contact"
               onClick={() => trackCTAClick('hero_start_project', '#contact')}
-              className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-accent-gradient text-text-primary text-sm font-bold hover:shadow-glow transition-all btn-micro min-h-[56px] w-full sm:w-auto shadow-lg"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-2xl sm:rounded-full bg-accent-gradient text-text-primary text-base font-bold shadow-lg hover:shadow-glow transition-all active:scale-[0.98] min-h-[52px] sm:min-h-[56px] w-full sm:w-auto"
             >
               <span>Start a Project</span>
               <ArrowRight className="h-4 w-4" />
@@ -92,18 +91,18 @@ export function Hero() {
             <a
               href="#projects"
               onClick={() => trackCTAClick('hero_view_case_studies', '#projects')}
-              className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full border border-border-subtle bg-bg-surface text-text-secondary hover:text-text-primary text-xs font-semibold transition-colors btn-micro min-h-[56px] w-full sm:w-auto"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-4 rounded-2xl sm:rounded-full border border-border-subtle bg-bg-surface text-text-primary text-sm font-semibold transition-colors active:scale-[0.98] min-h-[52px] sm:min-h-[56px] w-full sm:w-auto"
             >
               <span>View Case Studies</span>
             </a>
           </motion.div>
 
-          {/* 5. Clean Horizontal Trust Strip */}
+          {/* 5. Trust Standards - Hidden on small mobile screens to fit within 1 viewport */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.4 }}
-            className="pt-5 border-t border-border-subtle/30 space-y-3"
+            className="hidden sm:block pt-5 border-t border-border-subtle/30 space-y-3"
           >
             <span className="font-mono text-[10px] uppercase text-text-muted font-bold tracking-wider block">
               Core Engineering Standards
@@ -132,15 +131,15 @@ export function Hero() {
 
         </div>
 
-        {/* RIGHT COLUMN (55% / lg:col-span-7) — REAL SAAS PRODUCT INTERFACE */}
+        {/* RIGHT COLUMN (55% / lg:col-span-7) — SAAS PRODUCT INTERFACE (Below CTA on Mobile) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="lg:col-span-7 space-y-3"
+          className="lg:col-span-7 space-y-3 pt-4 lg:pt-0"
         >
-          {/* Top 5 Technology Badges */}
-          <div className="flex flex-wrap items-center justify-end gap-2 font-mono text-[10px]">
+          {/* Technology Badges - Hidden on mobile for cleaner density */}
+          <div className="hidden sm:flex flex-wrap items-center justify-end gap-2 font-mono text-[10px]">
             {['Next.js 15', 'OpenAI', 'React', 'n8n', 'PostgreSQL'].map((tech) => (
               <span key={tech} className="px-3 py-1 rounded-full bg-bg-surface border border-border-subtle/60 text-accent-primary font-semibold shadow-sm">
                 {tech}
