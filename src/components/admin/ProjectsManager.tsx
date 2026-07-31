@@ -1,21 +1,33 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useOptimistic, useTransition } from 'react';
 import { 
   FolderPlus, Edit, Trash2, Eye, EyeOff, Star, ExternalLink, 
-  Github, Plus, Check, X, Sparkles, Image, Code, FileText, Search
+  Github, Plus, X, Sparkles, Image, Code, FileText, Search,
+  ChevronLeft, ChevronRight, Upload, CheckCircle2, AlertCircle, FileCode, Layers
 } from 'lucide-react';
 import { ProjectModel } from '@/app/api/admin/projects/route';
+import { 
+  createProjectAction, updateProjectAction, togglePublishAction, 
+  toggleFeatureAction, deleteProjectAction 
+} from '@/app/actions/projects';
 
 export default function ProjectsManager() {
   const [projects, setProjects] = useState<ProjectModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterMode, setFilterMode] = useState<'all' | 'published' | 'draft' | 'featured'>('all');
+  const [isPending, startTransition] = useTransition();
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 6;
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<ProjectModel | null>(null);
+  const [caseStudyTab, setCaseStudyTab] = useState<'write' | 'preview'>('write');
 
   // Form State
   const [formTitle, setFormTitle] = useState('');
@@ -24,7 +36,8 @@ export default function ProjectsManager() {
   const [formCategory, setFormCategory] = useState('Web Architecture');
   const [formStatus, setFormStatus] = useState('Production');
   const [formCoverImage, setFormCoverImage] = useState('');
-  const [formTechStack, setFormTechStack] = useState('');
+  const [formTechStack, setFormTechStack] = useState<string[]>(['Next.js 15', 'TypeScript', 'Tailwind CSS']);
+  const [tagInput, setTagInput] = useState('');
   const [formGithubUrl, setFormGithubUrl] = useState('');
   const [formLiveUrl, setFormLiveUrl] = useState('');
   const [formCaseStudy, setFormCaseStudy] = useState('');
@@ -33,8 +46,10 @@ export default function ProjectsManager() {
   const [formSeoTitle, setFormSeoTitle] = useState('');
   const [formSeoDescription, setFormSeoDescription] = useState('');
   const [formSeoKeywords, setFormSeoKeywords] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // Fetch Projects List
   const fetchProjects = async () => {
     setLoading(true);
     setError(null);
@@ -57,6 +72,47 @@ export default function ProjectsManager() {
     fetchProjects();
   }, []);
 
+  // Tech Stack Tag Helpers
+  const addTechTag = () => {
+    if (tagInput.trim() && !formTechStack.includes(tagInput.trim())) {
+      setFormTechStack([...formTechStack, tagInput.trim()]);
+      setTagInput('');
+    }
+  };
+
+  const removeTechTag = (tag: string) => {
+    setFormTechStack(formTechStack.filter((t) => t !== tag));
+  };
+
+  // Image Upload Helper via Supabase Storage
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Image upload failed');
+      }
+
+      setFormCoverImage(data.url);
+    } catch (err: any) {
+      alert(`Upload Error: ${err.message}`);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Open Modals
   const openCreateModal = () => {
     setEditingProject(null);
     setFormTitle('');
@@ -64,8 +120,9 @@ export default function ProjectsManager() {
     setFormDescription('');
     setFormCategory('Web Architecture');
     setFormStatus('Production');
-    setFormCoverImage('');
-    setFormTechStack('Next.js 15, TypeScript, Tailwind CSS');
+    setFormCoverImage('https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1200&auto=format&fit=crop');
+    setFormTechStack(['Next.js 15', 'TypeScript', 'Tailwind CSS']);
+    setTagInput('');
     setFormGithubUrl('');
     setFormLiveUrl('');
     setFormCaseStudy('');
@@ -74,6 +131,7 @@ export default function ProjectsManager() {
     setFormSeoTitle('');
     setFormSeoDescription('');
     setFormSeoKeywords('');
+    setCaseStudyTab('write');
     setIsModalOpen(true);
   };
 
@@ -85,7 +143,8 @@ export default function ProjectsManager() {
     setFormCategory(proj.category || 'Web Architecture');
     setFormStatus(proj.status || 'Production');
     setFormCoverImage(proj.cover_image || '');
-    setFormTechStack(Array.isArray(proj.tech_stack) ? proj.tech_stack.join(', ') : '');
+    setFormTechStack(Array.isArray(proj.tech_stack) ? proj.tech_stack : []);
+    setTagInput('');
     setFormGithubUrl(proj.github_url || '');
     setFormLiveUrl(proj.live_url || '');
     setFormCaseStudy(proj.case_study || '');
@@ -94,27 +153,59 @@ export default function ProjectsManager() {
     setFormSeoTitle(proj.seo_title || proj.title);
     setFormSeoDescription(proj.seo_description || proj.description);
     setFormSeoKeywords(proj.seo_keywords || '');
+    setCaseStudyTab('write');
     setIsModalOpen(true);
   };
 
+  // Optimistic Toggle Actions via Server Actions
+  const handleTogglePublish = (proj: ProjectModel) => {
+    const nextState = !proj.published;
+    // Optimistic UI Update
+    setProjects((prev) =>
+      prev.map((p) => (p.id === proj.id ? { ...p, published: nextState } : p))
+    );
+
+    startTransition(async () => {
+      await togglePublishAction(proj.id, nextState);
+    });
+  };
+
+  const handleToggleFeature = (proj: ProjectModel) => {
+    const nextState = !proj.featured;
+    // Optimistic UI Update
+    setProjects((prev) =>
+      prev.map((p) => (p.id === proj.id ? { ...p, featured: nextState } : p))
+    );
+
+    startTransition(async () => {
+      await toggleFeatureAction(proj.id, nextState);
+    });
+  };
+
+  const handleDelete = (id: string) => {
+    if (!confirm('Are you sure you want to delete this project?')) return;
+
+    // Optimistic UI Update
+    setProjects((prev) => prev.filter((p) => p.id !== id));
+
+    startTransition(async () => {
+      await deleteProjectAction(id);
+    });
+  };
+
+  // Submit Form Action
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
-    const techArray = formTechStack
-      .split(',')
-      .map((t) => t.trim())
-      .filter((t) => t.length > 0);
-
-    const payload = {
-      ...(editingProject ? { id: editingProject.id } : {}),
+    const payload: Partial<ProjectModel> = {
       title: formTitle,
       slug: formSlug || formTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       description: formDescription,
       category: formCategory,
       status: formStatus,
       cover_image: formCoverImage,
-      tech_stack: techArray,
+      tech_stack: formTechStack,
       github_url: formGithubUrl,
       live_url: formLiveUrl,
       case_study: formCaseStudy,
@@ -125,77 +216,42 @@ export default function ProjectsManager() {
       seo_keywords: formSeoKeywords,
     };
 
-    try {
-      const res = await fetch('/api/admin/projects', {
-        method: editingProject ? 'PATCH' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+    if (editingProject) {
+      // Optimistic Update
+      setProjects((prev) =>
+        prev.map((p) => (p.id === editingProject.id ? ({ ...p, ...payload } as ProjectModel) : p))
+      );
 
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to save project');
+      await updateProjectAction(editingProject.id, payload);
+    } else {
+      const result = await createProjectAction(payload);
+      if (result.success && result.project) {
+        setProjects([result.project as ProjectModel, ...projects]);
       }
-
-      setIsModalOpen(false);
-      fetchProjects();
-    } catch (err: any) {
-      alert(`Save Error: ${err.message}`);
-    } finally {
-      setSubmitting(false);
     }
+
+    setSubmitting(false);
+    setIsModalOpen(false);
   };
 
-  const togglePublish = async (proj: ProjectModel) => {
-    try {
-      setProjects((prev) =>
-        prev.map((p) => (p.id === proj.id ? { ...p, published: !p.published } : p))
-      );
+  // Filtered & Paginated Calculation
+  const filteredProjects = projects.filter((p) => {
+    const matchesSearch =
+      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (Array.isArray(p.tech_stack) && p.tech_stack.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())));
 
-      await fetch('/api/admin/projects', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: proj.id, published: !proj.published }),
-      });
-    } catch (err) {
-      console.error(err);
-      fetchProjects();
-    }
-  };
+    if (filterMode === 'published') return matchesSearch && p.published;
+    if (filterMode === 'draft') return matchesSearch && !p.published;
+    if (filterMode === 'featured') return matchesSearch && p.featured;
+    return matchesSearch;
+  });
 
-  const toggleFeature = async (proj: ProjectModel) => {
-    try {
-      setProjects((prev) =>
-        prev.map((p) => (p.id === proj.id ? { ...p, featured: !p.featured } : p))
-      );
-
-      await fetch('/api/admin/projects', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: proj.id, featured: !proj.featured }),
-      });
-    } catch (err) {
-      console.error(err);
-      fetchProjects();
-    }
-  };
-
-  const deleteProject = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this project?')) return;
-
-    try {
-      setProjects((prev) => prev.filter((p) => p.id !== id));
-      await fetch(`/api/admin/projects?id=${id}`, { method: 'DELETE' });
-    } catch (err) {
-      console.error(err);
-      fetchProjects();
-    }
-  };
-
-  const filteredProjects = projects.filter((p) =>
-    p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const totalPages = Math.ceil(filteredProjects.length / ITEMS_PER_PAGE) || 1;
+  const paginatedProjects = filteredProjects.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
   return (
@@ -204,11 +260,11 @@ export default function ProjectsManager() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
-            <FolderPlus className="h-5 w-5 text-accent-primary" />
-            <span>Projects CMS Manager</span>
+            <Layers className="h-5 w-5 text-accent-primary" />
+            <span>Production-Ready Projects CMS</span>
           </h2>
           <p className="text-xs text-text-muted font-mono">
-            Manage, publish, edit, and feature portfolio projects without touching code.
+            Zero-code project management: Supabase Storage, Rich Text, Draft &amp; Publish modes, Optimistic UI.
           </p>
         </div>
 
@@ -217,37 +273,66 @@ export default function ProjectsManager() {
           className="px-4 py-2.5 rounded-xl bg-accent-gradient text-text-primary text-xs font-mono font-bold flex items-center gap-2 shadow-glow hover:brightness-110 transition-all"
         >
           <Plus className="h-4 w-4" />
-          <span>Create New Project</span>
+          <span>Create Project</span>
         </button>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="h-4 w-4 absolute left-3.5 top-3 text-text-muted" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search projects by title, category, or stack..."
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-bg-inset border border-border-subtle text-xs text-text-primary focus:outline-none focus:border-accent-primary font-mono"
-        />
+      {/* Filter Tabs & Search */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 font-mono text-xs">
+        {/* Search Input */}
+        <div className="relative flex-1">
+          <Search className="h-4 w-4 absolute left-3.5 top-3 text-text-muted" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
+            placeholder="Search projects by title, category, description, or technology tags..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-bg-inset border border-border-subtle text-text-primary focus:outline-none focus:border-accent-primary"
+          />
+        </div>
+
+        {/* Filter Pills */}
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-bg-inset border border-border-subtle/60">
+          {(['all', 'published', 'draft', 'featured'] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => {
+                setFilterMode(mode);
+                setCurrentPage(1);
+              }}
+              className={`px-3 py-1.5 rounded-lg capitalize text-[11px] font-bold transition-all ${
+                filterMode === mode
+                  ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30'
+                  : 'text-text-muted hover:text-text-primary'
+              }`}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Projects List Grid */}
       {loading ? (
         <div className="p-12 text-center text-xs font-mono text-text-muted">
-          Loading projects from database...
+          Loading production projects from database...
         </div>
-      ) : filteredProjects.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl bg-bg-surface border border-border-subtle text-xs font-mono text-text-muted">
-          No projects found. Click &quot;Create New Project&quot; to add one!
+      ) : paginatedProjects.length === 0 ? (
+        <div className="p-12 text-center rounded-2xl bg-bg-surface border border-border-subtle text-xs font-mono text-text-muted space-y-2">
+          <AlertCircle className="h-6 w-6 text-accent-highlight mx-auto" />
+          <p>No projects match your current search or filter query.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProjects.map((proj) => (
+          {paginatedProjects.map((proj) => (
             <div
               key={proj.id}
-              className="rounded-2xl bg-bg-surface border border-border-subtle overflow-hidden flex flex-col justify-between hover:border-border-subtle/80 transition-all shadow-xl"
+              className={`rounded-2xl bg-bg-surface border overflow-hidden flex flex-col justify-between transition-all shadow-xl ${
+                !proj.published ? 'border-amber-500/40 opacity-90' : 'border-border-subtle hover:border-border-subtle/80'
+              }`}
             >
               {/* Cover Image Preview */}
               <div className="h-44 w-full bg-bg-inset relative overflow-hidden group">
@@ -256,9 +341,11 @@ export default function ProjectsManager() {
                   alt={proj.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
+                
+                {/* Badges */}
                 <div className="absolute top-3 right-3 flex items-center gap-1.5">
                   <button
-                    onClick={() => toggleFeature(proj)}
+                    onClick={() => handleToggleFeature(proj)}
                     title={proj.featured ? 'Featured Project (Click to unfeature)' : 'Mark as Featured'}
                     className={`p-1.5 rounded-full border backdrop-blur-md transition-all ${
                       proj.featured
@@ -270,22 +357,27 @@ export default function ProjectsManager() {
                   </button>
 
                   <button
-                    onClick={() => togglePublish(proj)}
-                    title={proj.published ? 'Published (Click to unpublish)' : 'Unpublished (Draft)'}
+                    onClick={() => handleTogglePublish(proj)}
+                    title={proj.published ? 'Published (Click to unpublish)' : 'Draft Mode (Click to publish)'}
                     className={`p-1.5 rounded-full border backdrop-blur-md transition-all ${
                       proj.published
                         ? 'bg-emerald-500/30 border-emerald-400 text-emerald-300'
-                        : 'bg-black/60 border-white/20 text-text-muted'
+                        : 'bg-amber-500/40 border-amber-400 text-amber-200'
                     }`}
                   >
                     {proj.published ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                   </button>
                 </div>
 
-                <div className="absolute bottom-3 left-3">
+                <div className="absolute bottom-3 left-3 flex items-center gap-2">
                   <span className="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold bg-black/70 border border-white/10 backdrop-blur-md text-accent-highlight">
                     {proj.category}
                   </span>
+                  {!proj.published && (
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold bg-amber-500/80 border border-amber-300 text-black">
+                      Draft Mode
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -298,10 +390,10 @@ export default function ProjectsManager() {
                   </p>
                 </div>
 
-                {/* Tech Badges */}
+                {/* Technology Tags Badges */}
                 <div className="flex flex-wrap gap-1 pt-1">
                   {Array.isArray(proj.tech_stack) &&
-                    proj.tech_stack.slice(0, 4).map((tech, i) => (
+                    proj.tech_stack.map((tech, i) => (
                       <span
                         key={i}
                         className="px-2 py-0.5 rounded bg-bg-inset border border-border-subtle/50 text-[10px] font-mono text-text-muted"
@@ -309,14 +401,9 @@ export default function ProjectsManager() {
                         {tech}
                       </span>
                     ))}
-                  {Array.isArray(proj.tech_stack) && proj.tech_stack.length > 4 && (
-                    <span className="text-[10px] font-mono text-text-muted pl-1">
-                      +{proj.tech_stack.length - 4} more
-                    </span>
-                  )}
                 </div>
 
-                {/* Footer Controls */}
+                {/* Card Footer Controls */}
                 <div className="pt-3 border-t border-border-subtle/40 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {proj.github_url && (
@@ -351,7 +438,7 @@ export default function ProjectsManager() {
                     </button>
 
                     <button
-                      onClick={() => deleteProject(proj.id)}
+                      onClick={() => handleDelete(proj.id)}
                       className="p-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors"
                       title="Delete Project"
                     >
@@ -365,10 +452,36 @@ export default function ProjectsManager() {
         </div>
       )}
 
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-4 border-t border-border-subtle/40 font-mono text-xs text-text-muted">
+          <span>
+            Page {currentPage} of {totalPages} ({filteredProjects.length} total projects)
+          </span>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-xl border border-border-subtle bg-bg-surface disabled:opacity-30 hover:border-accent-primary transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-xl border border-border-subtle bg-bg-surface disabled:opacity-30 hover:border-accent-primary transition-colors"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* CREATE / EDIT PROJECT MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-bg-surface border border-border-subtle rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="bg-bg-surface border border-border-subtle rounded-3xl max-w-3xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between border-b border-border-subtle/50 pb-4">
               <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-accent-highlight" />
@@ -459,28 +572,74 @@ export default function ProjectsManager() {
                 />
               </div>
 
-              {/* Cover Image & Tech Stack */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-text-muted font-bold block">Cover Image URL</label>
-                  <input
-                    type="url"
-                    value={formCoverImage}
-                    onChange={(e) => setFormCoverImage(e.target.value)}
-                    placeholder="https://images.unsplash.com/..."
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-bg-inset border border-border-subtle text-text-primary focus:outline-none focus:border-accent-primary"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-text-muted font-bold block">Tech Stack (comma separated)</label>
+              {/* Image Upload & Cover Image URL */}
+              <div className="space-y-1">
+                <label className="text-text-muted font-bold block">Cover Image (Supabase Storage Upload)</label>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                   <input
                     type="text"
-                    value={formTechStack}
-                    onChange={(e) => setFormTechStack(e.target.value)}
-                    placeholder="Next.js 15, React 19, Tailwind CSS"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-bg-inset border border-border-subtle text-text-primary focus:outline-none focus:border-accent-primary"
+                    value={formCoverImage}
+                    onChange={(e) => setFormCoverImage(e.target.value)}
+                    placeholder="https://images.unsplash.com/... or uploaded image URL"
+                    className="flex-1 px-3.5 py-2.5 rounded-xl bg-bg-inset border border-border-subtle text-text-primary focus:outline-none focus:border-accent-primary"
                   />
+
+                  <label className="px-4 py-2.5 rounded-xl border border-border-subtle bg-bg-inset hover:border-accent-primary text-text-primary font-bold cursor-pointer transition-colors flex items-center justify-center gap-2 shrink-0">
+                    <Upload className="h-4 w-4 text-accent-primary" />
+                    <span>{uploadingImage ? 'Uploading...' : 'Upload File'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Technology Tags Input Manager */}
+              <div className="space-y-2">
+                <label className="text-text-muted font-bold block">Technology Tags</label>
+                <div className="flex flex-wrap gap-1.5 p-2 rounded-xl bg-bg-inset border border-border-subtle min-h-[44px]">
+                  {formTechStack.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-2.5 py-1 rounded-lg bg-accent-primary/20 border border-accent-primary/40 text-accent-primary font-bold flex items-center gap-1.5"
+                    >
+                      <span>{tag}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeTechTag(tag)}
+                        className="hover:text-red-400 transition-colors"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+
+                  <div className="flex items-center gap-1.5 flex-1 min-w-[140px]">
+                    <input
+                      type="text"
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addTechTag();
+                        }
+                      }}
+                      placeholder="Type tag & press Enter..."
+                      className="bg-transparent border-none outline-none text-text-primary px-2 text-xs w-full"
+                    />
+                    <button
+                      type="button"
+                      onClick={addTechTag}
+                      className="p-1 rounded bg-accent-primary/20 text-accent-primary hover:bg-accent-primary/40 transition-colors"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -509,19 +668,48 @@ export default function ProjectsManager() {
                 </div>
               </div>
 
-              {/* Case Study Content */}
-              <div className="space-y-1">
-                <label className="text-text-muted font-bold block">Case Study (Markdown / Rich Text)</label>
-                <textarea
-                  rows={5}
-                  value={formCaseStudy}
-                  onChange={(e) => setFormCaseStudy(e.target.value)}
-                  placeholder="# Case Study Overview&#10;&#10;Detailed architecture write-up..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-bg-inset border border-border-subtle text-text-primary focus:outline-none focus:border-accent-primary"
-                />
+              {/* Case Study Rich Text / Markdown Editor */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-text-muted font-bold block">Case Study (Rich Markdown Editor)</label>
+                  <div className="flex items-center gap-1 bg-bg-inset p-1 rounded-lg border border-border-subtle">
+                    <button
+                      type="button"
+                      onClick={() => setCaseStudyTab('write')}
+                      className={`px-3 py-1 rounded text-[10px] font-bold ${
+                        caseStudyTab === 'write' ? 'bg-accent-primary/20 text-accent-primary' : 'text-text-muted'
+                      }`}
+                    >
+                      Write Code
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCaseStudyTab('preview')}
+                      className={`px-3 py-1 rounded text-[10px] font-bold ${
+                        caseStudyTab === 'preview' ? 'bg-accent-primary/20 text-accent-primary' : 'text-text-muted'
+                      }`}
+                    >
+                      Live Preview
+                    </button>
+                  </div>
+                </div>
+
+                {caseStudyTab === 'write' ? (
+                  <textarea
+                    rows={6}
+                    value={formCaseStudy}
+                    onChange={(e) => setFormCaseStudy(e.target.value)}
+                    placeholder="# Case Study Overview&#10;&#10;### Technical Challenges & Architecture&#10;- High-concurrency Playwright scraping&#10;- Distributed Redis queue management"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-bg-inset border border-border-subtle text-text-primary focus:outline-none focus:border-accent-primary font-mono"
+                  />
+                ) : (
+                  <div className="p-4 rounded-xl bg-bg-inset border border-border-subtle text-text-primary font-mono whitespace-pre-wrap min-h-[140px] text-xs">
+                    {formCaseStudy || 'No case study content written yet.'}
+                  </div>
+                )}
               </div>
 
-              {/* Flags: Featured & Published */}
+              {/* Flags: Featured & Published / Draft Mode */}
               <div className="flex items-center gap-6 pt-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -530,7 +718,7 @@ export default function ProjectsManager() {
                     onChange={(e) => setFormFeatured(e.target.checked)}
                     className="rounded bg-bg-inset border-border-subtle text-accent-primary focus:ring-0"
                   />
-                  <span className="font-bold text-text-primary">Featured Project</span>
+                  <span className="font-bold text-text-primary">Featured Showcase</span>
                 </label>
 
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -540,7 +728,7 @@ export default function ProjectsManager() {
                     onChange={(e) => setFormPublished(e.target.checked)}
                     className="rounded bg-bg-inset border-border-subtle text-accent-primary focus:ring-0"
                   />
-                  <span className="font-bold text-text-primary">Published (Live on Portfolio)</span>
+                  <span className="font-bold text-text-primary">Published (Uncheck for Draft Mode)</span>
                 </label>
               </div>
 
