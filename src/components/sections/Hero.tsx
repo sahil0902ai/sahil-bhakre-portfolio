@@ -72,7 +72,7 @@ export function Hero() {
             I help founders, startups, and enterprises build AI software, modern web platforms, and automated pipelines that eliminate manual work.
           </motion.p>
 
-          {/* 4. Immediately Visible CTAs (52px - 56px Apple Touch Target) */}
+          {/* 4. Immediately Visible CTAs (52px - 56px Apple Touch Target + WhatsApp Quick Action) */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -88,13 +88,26 @@ export function Hero() {
               <ArrowRight className="h-4 w-4" />
             </a>
 
-            <a
-              href="#projects"
-              onClick={() => trackCTAClick('hero_view_case_studies', '#projects')}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-4 rounded-2xl sm:rounded-full border border-border-subtle bg-bg-surface text-text-primary text-sm font-semibold transition-colors active:scale-[0.98] min-h-[52px] sm:min-h-[56px] w-full sm:w-auto"
-            >
-              <span>View Case Studies</span>
-            </a>
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              <a
+                href="https://wa.me/919823511929?text=Hi%20Sahil,%20I%20saw%20your%20portfolio%20and%20I'd%20like%20to%20discuss%20a%20project."
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackCTAClick('hero_whatsapp_direct', 'https://wa.me/919823511929')}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 sm:py-4 rounded-2xl sm:rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 text-sm font-bold transition-all active:scale-[0.98] min-h-[52px] sm:min-h-[56px]"
+              >
+                <Zap className="h-4 w-4 fill-emerald-400" />
+                <span>WhatsApp Instant</span>
+              </a>
+
+              <a
+                href="#projects"
+                onClick={() => trackCTAClick('hero_view_case_studies', '#projects')}
+                className="inline-flex items-center justify-center px-5 py-3.5 sm:py-4 rounded-2xl sm:rounded-full border border-border-subtle bg-bg-surface text-text-primary text-sm font-semibold transition-colors active:scale-[0.98] min-h-[52px] sm:min-h-[56px]"
+              >
+                <span>Work</span>
+              </a>
+            </div>
           </motion.div>
 
           {/* 5. Trust Standards - Hidden on small mobile screens to fit within 1 viewport */}
