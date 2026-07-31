@@ -299,17 +299,23 @@ export function Header() {
             transition={{ duration: 0.2 }}
             className="lg:hidden mt-3 p-5 sm:p-6 rounded-3xl bg-bg-surface/95 backdrop-blur-2xl border border-border-subtle shadow-2xl space-y-5 text-left max-h-[82vh] overflow-y-auto"
           >
+            {/* Simplified Mobile Primary Navigation */}
             <div className="space-y-2">
               <span className="font-mono text-[10px] text-accent-primary uppercase tracking-wider font-bold block mb-1">
-                Primary Navigation
+                Navigation
               </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {primaryNavItems.map((item) => (
+              <div className="grid grid-cols-2 gap-2 font-mono">
+                {[
+                  { label: 'Home', href: '#' },
+                  { label: 'Services', href: '#capabilities' },
+                  { label: 'Projects', href: '#projects' },
+                  { label: 'Contact', href: '#contact' },
+                ].map((item) => (
                   <a
                     key={item.label}
                     href={item.href}
                     onClick={(e) => handleNavClick(e, item.href)}
-                    className="flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-mono font-semibold text-text-primary bg-bg-inset/80 border border-border-subtle/50 min-h-[48px]"
+                    className="flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold text-text-primary bg-bg-inset border border-border-subtle/60 min-h-[50px] active:scale-[0.98] transition-all"
                   >
                     <span>{item.label}</span>
                     <ArrowRight className="h-3.5 w-3.5 text-accent-primary" />
@@ -318,21 +324,40 @@ export function Header() {
               </div>
             </div>
 
+            {/* Simplified Mobile "More" Section */}
             <div className="pt-3 border-t border-border-subtle/40 space-y-2.5">
-              <span className="font-mono text-[10px] text-accent-primary uppercase tracking-wider font-bold block">
-                Secondary Tools & Pages
+              <span className="font-mono text-[10px] text-text-muted uppercase tracking-wider font-bold block">
+                More Pages &amp; Resources
               </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {secondaryNavGroups.flatMap(g => g.items).map((sec) => (
-                  <Link
-                    key={sec.label}
-                    href={sec.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl bg-bg-inset/60 border border-border-subtle/40 block text-xs font-mono min-h-[52px]"
-                  >
-                    <div className="font-bold text-text-primary">{sec.label}</div>
-                    <div className="text-[10px] text-text-muted truncate mt-0.5">{sec.description}</div>
-                  </Link>
+              <div className="grid grid-cols-2 gap-2 font-mono">
+                {[
+                  { label: 'About', href: '#about', isPage: false },
+                  { label: 'Blog', href: '/blog', isPage: true },
+                  { label: 'Resources', href: '/resources', isPage: true },
+                  { label: 'Resume', href: '/resume', isPage: true },
+                  { label: 'Open Source', href: '/open-source', isPage: true },
+                  { label: 'Case Studies', href: '/projects', isPage: true },
+                ].map((sec) => (
+                  sec.isPage ? (
+                    <Link
+                      key={sec.label}
+                      href={sec.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-3.5 py-2.5 rounded-xl bg-bg-inset/60 border border-border-subtle/40 block text-xs font-semibold text-text-secondary hover:text-text-primary min-h-[48px] flex items-center justify-between"
+                    >
+                      <span>{sec.label}</span>
+                      <span className="text-[10px] text-text-muted">↗</span>
+                    </Link>
+                  ) : (
+                    <a
+                      key={sec.label}
+                      href={sec.href}
+                      onClick={(e) => handleNavClick(e, sec.href)}
+                      className="px-3.5 py-2.5 rounded-xl bg-bg-inset/60 border border-border-subtle/40 block text-xs font-semibold text-text-secondary hover:text-text-primary min-h-[48px] flex items-center justify-between"
+                    >
+                      <span>{sec.label}</span>
+                    </a>
+                  )
                 ))}
               </div>
             </div>
