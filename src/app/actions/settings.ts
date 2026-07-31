@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { createServerClient } from '@lib/supabase/server';
 import { SiteSettingsModel } from '@/app/api/admin/settings/route';
 
@@ -23,7 +23,9 @@ export async function updateSiteSettingsAction(settings: Partial<SiteSettingsMod
       console.warn('Supabase Settings Upsert Warning:', error.message);
     }
 
-    revalidatePath('/');
+    // Invalidate Next.js 15 Server Component Tag & Layout Cache
+    revalidateTag('site-settings');
+    revalidatePath('/', 'layout');
     revalidatePath('/about');
     revalidatePath('/services');
     revalidatePath('/contact');
