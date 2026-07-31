@@ -4,17 +4,29 @@ import { createServerClient } from '@lib/supabase/server';
 export async function GET() {
   try {
     const supabase = createServerClient(true);
-    const { data, error } = await supabase
+    const { data: leads, error: leadsError } = await supabase
       .from('leads')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching admin leads:', error);
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    if (leadsError) {
+      console.error('Error fetching admin leads:', leadsError);
+      return NextResponse.json({ success: false, error: leadsError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, leads: data || [] }, { status: 200 });
+    const { data: subscribers, error: subError } = await supabase
+      .from('newsletter_subscribers')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    return NextResponse.json(
+      {
+        success: true,
+        leads: leads || [],
+        subscribers: subscribers || [],
+      },
+      { status: 200 }
+    );
   } catch (err: any) {
     console.error('Server error in GET /api/admin/leads:', err);
     return NextResponse.json({ success: false, error: err.message || 'Internal server error' }, { status: 500 });
@@ -45,6 +57,33 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ success: true, lead: data?.[0] || null }, { status: 200 });
   } catch (err: any) {
     console.error('Server error in PATCH /api/admin/leads:', err);
+    return NextResponse.json({ success: false, error: err.message || 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Missing lead id parameter' }, { status: 400 });
+    }
+
+    const supabase = createServerClient(true);
+    const { error } = await supabase
+      .from('leads')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting lead from Supabase:', error);
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, message: 'Lead deleted successfully' }, { status: 200 });
+  } catch (err: any) {
+    console.error('Server error in DELETE /api/admin/leads:', err);
     return NextResponse.json({ success: false, error: err.message || 'Internal server error' }, { status: 500 });
   }
 }
